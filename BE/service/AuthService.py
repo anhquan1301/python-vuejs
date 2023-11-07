@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import timedelta
 from fastapi import HTTPException, status
 from auth.auth import Authencation
@@ -10,6 +11,7 @@ from model.AccountRoleAssociation import AccountRoleAssociation
 from model.Role import Role
 
 
+@dataclass
 class AuthService:
     commons = Commons()
 

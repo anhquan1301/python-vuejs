@@ -1,0 +1,27 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "runFunctionsHost",
+			"type": "shell",
+			"windows": {
+				"command": ". ${config:azureFunctions.pythonVenv}/Scripts/activate ; func host start"
+			},
+			"isBackground": true,
+			"options": {
+				"env": {
+					"languageWorkers__python__arguments": "-m ptvsd --host 127.0.0.1 --port 9091"
+				}
+			},
+			"problemMatcher": "$func-watch"
+		},
+		{
+			"label": "pip install (functions)",
+			"type": "shell",
+			"windows": {
+				"command": ".${config:azureFunctions.pythonVenv}\\Scripts\\python"
+			},
+			"problemMatcher": []
+		}
+	]
+}

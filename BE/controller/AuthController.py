@@ -1,13 +1,33 @@
-from fastapi import Depends, status
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, status
 
+from auth.auth import Authencation
 from dto.account.AccountLoginDTO import AccountDTO
 from dto.account.RegistrationDataDTO import RegistrationDataDTO
 from service.AuthService import AuthService
-from auth.auth import Authencation
 
 
 class AuthController:
+    #      {
+    #   "scriptFile": "if_b40_001_controller.py",
+    #   "bindings": [
+    #     {
+    #       "authLevel": "function",
+    #       "type": "httpTrigger",
+    #       "direction": "in",
+    #       "name": "req",
+    #       "methods": [
+    #         "post"
+    #       ],
+    #       "route": "if-b40-001/{*route}"
+    #     },
+    #     {
+    #       "type": "http",
+    #       "direction": "out",
+    #       "name": "$return"
+    #     }
+    #   ]
+    # }
+
     auth_router = APIRouter()
     auth_service = AuthService()
     authentica = Authencation()
