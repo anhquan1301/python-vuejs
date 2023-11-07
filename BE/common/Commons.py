@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from config.db import SessionLocal
 from passlib.context import CryptContext
 
-@dataclass
+
 class Commons:
     db = SessionLocal()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

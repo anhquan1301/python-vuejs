@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-
+import azure.functions as func
 from auth.auth import Authencation
 from dto.account.AccountLoginDTO import AccountDTO
 from dto.account.RegistrationDataDTO import RegistrationDataDTO
@@ -7,41 +7,22 @@ from service.AuthService import AuthService
 
 
 class AuthController:
-    #      {
-    #   "scriptFile": "if_b40_001_controller.py",
-    #   "bindings": [
-    #     {
-    #       "authLevel": "function",
-    #       "type": "httpTrigger",
-    #       "direction": "in",
-    #       "name": "req",
-    #       "methods": [
-    #         "post"
-    #       ],
-    #       "route": "if-b40-001/{*route}"
-    #     },
-    #     {
-    #       "type": "http",
-    #       "direction": "out",
-    #       "name": "$return"
-    #     }
-    #   ]
-    # }
-
-    auth_router = APIRouter()
     auth_service = AuthService()
     authentica = Authencation()
 
-    @auth_router.post("/login", status_code=status.HTTP_200_OK)
-    async def login(account_by_request: AccountDTO):
+    def login(self, req: func.HttpRequest) -> func.HttpResponse:
+        data = req.get_json()
+        account_by_request: AccountDTO = data
         response = AuthController.auth_service.handle_login(account_by_request)
-        return response
+        return func.HttpResponse(response, status_code=200)
 
-    @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
-    async def register(registration_data: RegistrationDataDTO):
+    def register(self, req: func.HttpRequest) -> func.HttpResponse:
+        registration_data = req.get_body()
         response = AuthController.auth_service.handle_register(registration_data)
         return response
 
-    @auth_router.get("/test", dependencies=[Depends(authentica.check_admin_role)])
-    async def register():
-        return "ok"
+    def create_product(self, req: func.HttpRequest) -> func.HttpResponse:
+        return func.HttpResponse("Product created successfully.", status_code=200)
+
+    def update_product(self, req: func.HttpRequest) -> func.HttpResponse:
+        return func.HttpResponse("Product update successfully.", status_code=200)

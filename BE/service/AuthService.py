@@ -11,7 +11,6 @@ from model.AccountRoleAssociation import AccountRoleAssociation
 from model.Role import Role
 
 
-@dataclass
 class AuthService:
     commons = Commons()
 

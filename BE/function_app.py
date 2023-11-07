@@ -1,25 +1,31 @@
 import azure.functions as func
+import datetime
+import json
 import logging
+from controller.AuthController import AuthController
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+app = func.FunctionApp()
 
-@app.route(route="aaaa")
-def aaaa(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
-
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
+def route_dispatcher(req: func.HttpRequest) -> func.HttpResponse:
+    if req.method == "GET":
+        routes = {}
+    elif req.method == "POST":
+        routes = {"login": AuthController().login}
+    elif req.method == "PUT":
+        routes = {}
+    elif req.method == "DELETE":
+        routes = {}
     else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
+        return func.HttpResponse("Method not supported", status_code=400)
+
+    route = req.route_params.get("route")
+    if route in routes:
+        return routes[route](req)
+    else:
+        return func.HttpResponse("Route not found", status_code=404)
+
+
+@app.route(route="{route}")
+def route_handler(req: func.HttpRequest) -> func.HttpResponse:
+    return route_dispatcher(req)
