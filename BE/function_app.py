@@ -11,8 +11,13 @@ def route_dispatcher(req: func.HttpRequest) -> func.HttpResponse:
     if req.method == "GET":
         routes = {}
     elif req.method == "POST":
-        routes = {"login": AuthController().login}
+        routes = {
+            "login": AuthController(req=req).login,
+            "register": AuthController(req=req).register,
+        }
     elif req.method == "PUT":
+        routes = {}
+    elif req.method == "PATCH":
         routes = {}
     elif req.method == "DELETE":
         routes = {}
@@ -27,5 +32,5 @@ def route_dispatcher(req: func.HttpRequest) -> func.HttpResponse:
 
 
 @app.route(route="{route}")
-def route_handler(req: func.HttpRequest) -> func.HttpResponse:
+def main(req: func.HttpRequest) -> func.HttpResponse:
     return route_dispatcher(req)

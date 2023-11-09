@@ -3,6 +3,6 @@ from pydantic import BaseModel
 
 
 @dataclass
-class AccountDTO(BaseModel):
+class AccountDTO:
     username: str
     password: str

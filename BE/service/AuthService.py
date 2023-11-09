@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta
-from fastapi import HTTPException, status
+import json
 from auth.auth import Authencation
 from common.Commons import Commons
 from core.Enum import AccessTokenExprie, ValueOfRole
@@ -9,10 +9,14 @@ from dto.account.RegistrationDataDTO import RegistrationDataDTO
 from model.Account import Account
 from model.AccountRoleAssociation import AccountRoleAssociation
 from model.Role import Role
+import azure.functions as func
+from http import HTTPStatus
 
 
 class AuthService:
-    commons = Commons()
+    def __init__(self) -> None:
+        self.error_message: dict = {}
+        self.commons = Commons()
 
     def handle_login(self, account_by_request: AccountDTO) -> dict:
         authencation = Authencation()
@@ -20,27 +24,28 @@ class AuthService:
             account_by_request.username, account_by_request.password
         )
         if not account:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid username or password",
+            self.error_message = {"message": "Invalid username or password"}
+            return func.HttpResponse(
+                json.dumps(self.error_message), status_code=HTTPStatus.UNAUTHORIZED
             )
 
         account_role_accsociation = self.commons.get_model(
             AccountRoleAssociation, "account_id", account.id
         )
         if not account_role_accsociation:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="account role accsociation is not exist",
+            self.error_message = {"message": "account role accsociation is not exist"}
+            return func.HttpResponse(
+                json.dumps(self.error_message), status_code=HTTPStatus.UNAUTHORIZED
             )
+
         role_user = self.commons.get_all_models(
             Role, "id", account_role_accsociation.role_id
         )
         role_name = [role.name for role in role_user]
         if not role_user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="role of user is not exist",
+            self.error_message = {"message": "role of user is not exist"}
+            return func.HttpResponse(
+                json.dumps(self.error_message), status_code=HTTPStatus.UNAUTHORIZED
             )
         access_token_expires = timedelta(minutes=AccessTokenExprie.MINUTE.value)
         data = {"username": account_by_request.username, "role": role_name}
@@ -54,18 +59,20 @@ class AuthService:
             "access_token": access_token,
             "token_type": "bearer",
         }
-        return result
+        return func.HttpResponse(json.dumps(result), status_code=HTTPStatus.OK)
 
     def handle_register(self, data: RegistrationDataDTO) -> dict:
         is_exist_username = self.commons.check_exist(Account, "username", data.username)
         if is_exist_username:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="username already exist"
+            self.error_message = {"message": "username already exist"}
+            return func.HttpResponse(
+                json.dumps(self.error_message), status_code=HTTPStatus.BAD_REQUEST
             )
         is_exist_email = self.commons.check_exist(Account, "email", data.email)
         if is_exist_email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="email already exist"
+            self.error_message = {"message": "email already exist"}
+            return func.HttpResponse(
+                json.dumps(self.error_message), status_code=HTTPStatus.BAD_REQUEST
             )
         hashed_password = self.commons.get_password_hash(data.password)
         new_account = Account(
@@ -81,4 +88,4 @@ class AuthService:
         )
         self.commons.create(account_role_association)
         result = {"message": "registration successful"}
-        return result
+        return func.HttpResponse(json.dumps(result), status_code=HTTPStatus.CREATED)
