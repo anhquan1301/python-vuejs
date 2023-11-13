@@ -11,7 +11,11 @@ class ValueOfRole(Enum):
     ROLE_CUSTOMER = 3
 
 
-class NameOfRole(Enum):
-    ADMIN = "ROLE_ADMIN"
-    EMPLOYEE = "ROLE_EMPLOYEE"
-    CUSTOMER = "ROLE_CUSTOMER"
+class SortType(Enum):
+    SORT_PRICE_DESC = "1"
+    SORT_PRICE_ASC = "2"
+    SORT_NAME_DESC = "3"
+    SORT_NAME_ASC = "4"
+
+class LimitOfPage(Enum):
+    LIMIT = 2

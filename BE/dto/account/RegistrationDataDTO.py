@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from pydantic import BaseModel, constr, EmailStr
+from typing import Optional
+from pydantic import BaseModel, Field, EmailStr
 
 
-@dataclass
 class RegistrationDataDTO(BaseModel):
-    email: EmailStr
-    username: str
-    password: constr(min_length=5,max_length=30)
+    email: EmailStr = ...
+    username: Optional[str] = Field(..., min_length=3, max_length=30)
+    password: Optional[str] = Field(..., min_length=5, max_length=30)

@@ -1,14 +1,26 @@
 import importlib
+import logging
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
+
+log_file_path = os.path.join("log", "sql.log")
+
+logging.basicConfig()
+
+logging.basicConfig(filename=log_file_path, level=logging.INFO)
+
+logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 URL_DB = "postgresql://postgres:123456@localhost:5432/dieucosmetics"
 
 engine = create_engine(URL_DB)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = scoped_session(
+    sessionmaker(autocommit=False, autoflush=False, bind=engine)
+)
 
 Base = declarative_base()
 
@@ -33,8 +45,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# def update_database():
-#     metadata = Base.metadata
-#     metadata.create_all(engine, checkfirst=True)

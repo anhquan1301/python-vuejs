@@ -1,23 +1,28 @@
-from typing import Optional
+from http import HTTPStatus
 from dotenv import load_dotenv
 import os
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from common.Commons import Commons
-from core.Enum import NameOfRole
+from core.Enum import ValueOfRole
 from model.Account import Account
+import azure.functions as func
+from sqlalchemy.orm import scoped_session
 
 
 class Authencation:
-    commons = Commons()
-    load_dotenv()
-    SECRET_KEY = os.getenv("SECRET_KEY")
-    ALGORITHM = "HS256"
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+    def __init__(self, db: scoped_session) -> None:
+        self.db = db
+        self.error_message: dict
+        self.commons = Commons(db=self.db)
+        self.dotenv = load_dotenv()
+        self.SECRET_KEY = os.getenv("SECRET_KEY")
+        self.ALGORITHM = "HS256"
+        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
     def create_access_token(self, data: dict, expires_delta: timedelta) -> jwt:
         to_encode = data.copy()
@@ -37,54 +42,65 @@ class Authencation:
     def verify_token(self, token: str):
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            print(payload.get("role"))
-            return payload.get("role")
+            return payload
         except JWTError:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Could not validate credentials",
+            self.error_message = self.commons.get_error(
+                "Could not validate credentials", HTTPStatus.FORBIDDEN
             )
+            raise Exception(self.error_message)
 
-    async def get_current_user(self, token: Optional[str] = Depends(oauth2_scheme)):
+    def get_token(self, req: func.HttpRequest) -> str:
+        token = req.headers.get("Authorization")
+        if token and token.startswith("Bearer "):
+            return token[len("Bearer ") :]
+        return ""
+
+    def get_current_user(self, req: func.HttpRequest):
+        token = self.get_token(req)
         if token is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token",
+            self.error_message = self.commons.get_error(
+                "Invalid token", HTTPStatus.UNAUTHORIZED
             )
+            raise Exception(self.error_message)
         user_info = self.verify_token(token)
         return user_info
 
-    async def check_admin_role(user_info: dict = Depends(get_current_user)) -> bool:
-        if NameOfRole.ADMIN.value not in user_info:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Permission denied",
+    def check_admin_role(self, user_info: dict = Depends(get_current_user)) -> bool:
+        if ValueOfRole.ROLE_ADMIN.name not in user_info:
+            self.error_message = self.commons.get_error(
+                "Permission denied", HTTPStatus.FORBIDDEN
             )
+            raise Exception(self.error_message)
         return True
 
-    async def check_admin_or_employee_role(
+    def check_admin_or_employee_role(
+        self,
         user_info: dict = Depends(get_current_user),
     ) -> bool:
-        allowed_roles = {NameOfRole.ADMIN.value, NameOfRole.EMPLOYEE.value}
+        allowed_roles = {ValueOfRole.ROLE_ADMIN.name, ValueOfRole.ROLE_EMPLOYEE.name}
         if not any(role in allowed_roles for role in user_info["role"]):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Permission denied",
+            self.error_message = self.commons.get_error(
+                "Permission denied", HTTPStatus.FORBIDDEN
             )
+            raise Exception(self.error_message)
         return True
 
-    async def check_admin_or_customer_role(
+    def check_admin_or_customer_role(
+        self,
         user_info: dict = Depends(get_current_user),
     ) -> bool:
-        allowed_roles = {NameOfRole.ADMIN.value, NameOfRole.CUSTOMER.value}
+        allowed_roles = {ValueOfRole.ROLE_ADMIN.name, ValueOfRole.ROLE_CUSTOMER.name}
         if not any(role in allowed_roles for role in user_info["role"]):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Permission denied",
+            self.error_message = self.commons.get_error(
+                "Permission denied", HTTPStatus.FORBIDDEN
             )
+            raise Exception(self.error_message)
         return True
 
-    async def check_login_status(token: str = Depends(get_current_user)) -> bool:
+    def check_login_status(self, token: str = Depends(get_current_user)) -> bool:
         if not token:
-            raise HTTPException(status_code=401, detail="You need to log in first")
+            self.error_message = self.commons.get_error(
+                "You need to log in first", HTTPStatus.UNAUTHORIZED
+            )
+            raise Exception(self.error_message)
         return True

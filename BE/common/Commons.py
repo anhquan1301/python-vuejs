@@ -1,11 +1,15 @@
-from dataclasses import dataclass
-from config.db import SessionLocal
+from http import HTTPStatus
+import json
 from passlib.context import CryptContext
+import azure.functions as func
+from pydantic import ValidationError
+from sqlalchemy.orm import scoped_session
 
 
 class Commons:
-    db = SessionLocal()
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    def __init__(self, db: scoped_session) -> None:
+        self.db = db
+        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def get_model(self, model, field, value):
         model = self.db.query(model).filter(getattr(model, field) == value).first()
@@ -15,7 +19,7 @@ class Commons:
         models = self.db.query(model).filter(getattr(model, field) == value).all()
         return models
 
-    def check_exist(self, model, field, value):
+    def check_exist(self, model, field, value) -> bool:
         is_exist = bool(
             self.db.query(model).filter(getattr(model, field) == value).first()
         )
@@ -27,9 +31,9 @@ class Commons:
         self.db.refresh(model)
         return model
 
-    def update(self, model, field, value, update_data: dict):
-        instance = self.check_exist(self, model, field, value)
-        if not instance:
+    def update(self, model, field, value, update_data: dict) -> None:
+        instance = self.get_model(self, model, field, value)
+        if instance:
             for key, value in update_data.items():
                 setattr(instance, key, value)
             self.db.commit()
@@ -37,8 +41,33 @@ class Commons:
             return instance
         return None
 
+    def update_then_not_exist(self, model, update_data: dict):
+        for key, value in update_data.items():
+            setattr(model, key, value)
+        self.db.commit()
+        self.db.refresh(model)
+        return model
+
     def get_password_hash(self, password: str) -> str:
         return self.pwd_context.hash(password)
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return self.pwd_context.verify(plain_password, hashed_password)
+
+    def response_func_http(
+        self, message: dict, status_code: HTTPStatus
+    ) -> func.HttpResponse:
+        return func.HttpResponse(
+            status_code=status_code,
+            body=json.dumps(message),
+            mimetype="application/json",
+        )
+
+    def get_message_error(self, e: ValidationError) -> dict:
+        return {"message": (e.errors()[0]["type"])}
+
+    def get_error(self, message: str, http_status: HTTPStatus):
+        return {"message": message, "http_status": http_status}
+
+    def get_message(self, message: str):
+        return {"message": message}

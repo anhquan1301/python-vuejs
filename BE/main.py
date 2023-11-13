@@ -4,7 +4,6 @@ from config.db import create_database
 from controller.AuthController import AuthController
 
 app = FastAPI()
-app.include_router(AuthController.auth_router)
 create_database()
 
 
