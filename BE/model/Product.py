@@ -14,4 +14,4 @@ class Product(BaseModel):
     is_delete = Column(Boolean, default=False)
     product_type_id = Column(Integer, unique=True)
     producer_id = Column(Integer, unique=True)
-    color_id = Column(Integer, unique=True)
+    

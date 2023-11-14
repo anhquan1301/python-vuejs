@@ -1,4 +1,4 @@
-from sqlalchemy import case, func
+from sqlalchemy import Numeric, and_, case, cast, func, or_
 from sqlalchemy.orm import scoped_session
 from core.Enum import LimitOfPage, SortType
 from model.Color import Color
@@ -37,32 +37,46 @@ class ProductRepository:
         )
         query = (
             self.db.query(
+                Product.id.label("product_id"),
                 Product.code.label("product_code"),
                 Product.name.label("product_name"),
-                Product.description.label("description"),
-                Color.hex_code.label("color_code"),
-                Color.name.label("color_name"),
                 Image.name.label("image_name"),
                 sub_query.c.price_sale.label("price_sale"),
                 ProductCapacity.price.label("price"),
-                ProductCapacity.quantity.label("quantity"),
-                Producer.name.label("producer_name"),
-                ProductType.name.label("product_type_name"),
             )
             .select_from(Product)
             .join(sub_query, Product.id == sub_query.c.product_id)
             .join(ProductCapacity, ProductCapacity.product_id == Product.id)
             .join(ProductType, ProductType.id == Product.product_type_id)
             .join(Producer, Producer.id == Product.producer_id)
-            .join(Color, Color.id == Product.color_id)
-            .join(Image, Image.product_capacity_id == ProductCapacity.id)
+            .join(Color, Color.id == ProductCapacity.color_id)
+            .join(
+                Image,
+                (Image.product_capacity_id == ProductCapacity.id)
+                & (ProductCapacity.price_sale == sub_query.c.price_sale),
+            )
             .filter(
                 Product.name.like(f"%{name_search}%"),
-                (
-                    Product.product_type_id.is_(None)
-                    | (Product.product_type_id == product_type_id)
+                or_(
+                    and_(
+                        (product_type_id is not None),
+                        (Product.product_type_id == product_type_id),
+                    ),
+                    and_(
+                        (product_type_id is None),
+                        (Product.product_type_id == Product.product_type_id),
+                    ),
                 ),
-                (Product.producer_id.is_(None) | (Product.producer_id == producer_id)),
+                or_(
+                    and_(
+                        (producer_id is not None),
+                        (Product.producer_id == producer_id),
+                    ),
+                    and_(
+                        (producer_id is None),
+                        (Product.producer_id == Product.producer_id),
+                    ),
+                ),
                 Product.is_delete.is_(False),
                 Product.is_data_entry.is_(True),
                 sub_query.c.price_sale >= min_price,
@@ -72,27 +86,26 @@ class ProductRepository:
                 case(
                     (
                         sort_type == SortType.SORT_PRICE_DESC.value,
-                        sub_query.c.price_sale * -1,
+                        cast(sub_query.c.price_sale, Numeric) * -1,
                     ),
                     (
                         sort_type == SortType.SORT_PRICE_ASC.value,
-                        sub_query.c.price_sale,
+                        cast(sub_query.c.price_sale, Numeric),
                     ),
                     (
                         sort_type == SortType.SORT_NAME_DESC.value,
-                        Product.name * -1,
+                        cast(Product.name, Numeric) * -1,
                     ),
                     (
                         sort_type == SortType.SORT_NAME_ASC.value,
-                        Product.name,
+                        cast(Product.name, Numeric),
                     ),
-                    else_=Product.id * -1,
+                    else_=cast(Product.id, Numeric) * -1,
                 )
             )
             .limit(limit)
             .offset(offset)
         )
-        self.db.commit()
         result = query.all()
 
         return result

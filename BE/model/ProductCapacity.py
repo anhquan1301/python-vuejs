@@ -13,3 +13,4 @@ class ProductCapacity(BaseModel):
     quantity = Column(Integer)
     capacity_id = Column(Integer)
     product_id = Column(Integer)
+    color_id = Column(Integer, unique=True)
