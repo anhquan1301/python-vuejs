@@ -19,3 +19,5 @@ class SortType(Enum):
 
 class LimitOfPage(Enum):
     LIMIT = 2
+class CodeName(Enum):
+    PRODUCT_CODE_NAME = "SP"

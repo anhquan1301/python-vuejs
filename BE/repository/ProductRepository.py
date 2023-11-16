@@ -23,7 +23,7 @@ class ProductRepository:
         max_price: int,
         page: int,
         sort_type: str,
-    ):
+    ) -> list:
         limit = LimitOfPage.LIMIT.value
         offset = page * limit
         sub_query = (
@@ -109,3 +109,11 @@ class ProductRepository:
         result = query.all()
 
         return result
+
+    def get_count_id(self) -> any:
+        query = (
+            self.db.query(func.count(Product.id).label("count"))
+            .select_from(Product)
+            .scalar()
+        )
+        return query

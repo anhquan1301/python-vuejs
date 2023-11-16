@@ -21,6 +21,7 @@ def route_dispatcher(req: func.HttpRequest) -> func.HttpResponse:
         routes = {
             "login": AuthController(db=db).login,
             "register": AuthController(db=db).register,
+            "create_product": ProductController(db=db).create_product,
         }
     elif req.method == "PUT":
         routes = {"change-password": AuthController(db=db).change_password}
@@ -42,8 +43,10 @@ def route_dispatcher(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="{route}")
 def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
+        logging.info(req)
         return route_dispatcher(req)
     except Exception as e:
+        logging.error(e)
         error_message = {"message": e.args[0]["message"]}
         return Commons(db=db).response_func_http(
             error_message, e.args[0]["http_status"]

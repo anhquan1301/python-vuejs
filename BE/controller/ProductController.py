@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from sqlalchemy.orm import scoped_session
 import azure.functions as func
+from dto.product.ProductCreateDTO import ProductCreateDTO
 
 from service.ProductService import ProductService
 
@@ -17,17 +18,15 @@ class ProductController:
             "producer_id": req.params.get("producerId"),
             "min_price": req.params.get("minPrice"),
             "max_price": req.params.get("maxPrice"),
-            "page": req.params.get("page"),
+            "page": req.params.get("page") or 0,
             "sort_type": req.params.get("sortType"),
         }
-        try:
-            response = self.product_service.get_product_list(value_select)
-            self.db.commit()
-            return response
-        except Exception as e:
-            self.db.rollback()
-            return func.HttpResponse(
-                "Internal Server Error", status_code=HTTPStatus.INTERNAL_SERVER_ERROR
-            )
-        finally:
-            self.db.close()
+
+        response = self.product_service.get_product_list(value_select)
+        return response
+
+    def create_product(self, req=func.HttpRequest) -> func.HttpResponse:
+        data = req.get_json()
+        product_dto = ProductCreateDTO(**data)
+        response = self.product_service.handle_create_product(product_dto)
+        return response
