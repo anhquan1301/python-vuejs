@@ -1,0 +1,5 @@
+insert into public.capacity(id,name,created_at,updated_at) values 
+ (1,'Chưa cập nhật',TIMESTAMP '2023-11-12 14:55:16.000',TIMESTAMP '2023-11-12 14:55:15.000')
+,(2,'170g',TIMESTAMP '2023-11-12 14:55:28.000',TIMESTAMP '2023-11-12 14:55:29.000')
+,(3,'454g',TIMESTAMP '2023-11-12 14:55:37.000',TIMESTAMP '2023-11-12 14:55:38.000')
+;

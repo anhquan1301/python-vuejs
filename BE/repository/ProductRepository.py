@@ -53,7 +53,8 @@ class ProductRepository:
             .join(
                 Image,
                 (Image.product_capacity_id == ProductCapacity.id)
-                & (ProductCapacity.price_sale == sub_query.c.price_sale),
+                & (ProductCapacity.price_sale == sub_query.c.price_sale)
+                & (Image.is_display == True),
             )
             .filter(
                 Product.name.like(f"%{name_search}%"),
@@ -107,7 +108,6 @@ class ProductRepository:
             .offset(offset)
         )
         result = query.all()
-
         return result
 
     def get_count_id(self) -> any:

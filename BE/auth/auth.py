@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import List
 from dotenv import load_dotenv
 import os
 from fastapi import Depends
@@ -10,6 +11,7 @@ from common.Commons import Commons
 from core.Enum import ValueOfRole
 from model.Account import Account
 import azure.functions as func
+from azure.functions import HttpRequest, HttpResponse
 from sqlalchemy.orm import scoped_session
 
 
@@ -65,42 +67,25 @@ class Authencation:
         user_info = self.verify_token(token)
         return user_info
 
-    def check_admin_role(self, user_info: dict = Depends(get_current_user)) -> bool:
-        if ValueOfRole.ROLE_ADMIN.name not in user_info:
-            self.error_message = self.commons.get_error(
-                "Permission denied", HTTPStatus.FORBIDDEN
-            )
-            raise Exception(self.error_message)
-        return True
+    
+    def authenticate_and_authorize(allowed_roles: List[str]):
+        def decorator(func):
+            def wrapper(self, req=HttpRequest, *args, **kwargs):
+                token = req.headers.get("Authorization")
+                user_info = self.get_current_user(token)
 
-    def check_admin_or_employee_role(
-        self,
-        user_info: dict = Depends(get_current_user),
-    ) -> bool:
-        allowed_roles = {ValueOfRole.ROLE_ADMIN.name, ValueOfRole.ROLE_EMPLOYEE.name}
-        if not any(role in allowed_roles for role in user_info["role"]):
-            self.error_message = self.commons.get_error(
-                "Permission denied", HTTPStatus.FORBIDDEN
-            )
-            raise Exception(self.error_message)
-        return True
+                if not self.has_required_roles(user_info, allowed_roles):
+                    self.error_message = self.commons.get_error(
+                        "Permission denied", HTTPStatus.FORBIDDEN
+                    )
+                    raise Exception(self.error_message)
 
-    def check_admin_or_customer_role(
-        self,
-        user_info: dict = Depends(get_current_user),
-    ) -> bool:
-        allowed_roles = {ValueOfRole.ROLE_ADMIN.name, ValueOfRole.ROLE_CUSTOMER.name}
-        if not any(role in allowed_roles for role in user_info["role"]):
-            self.error_message = self.commons.get_error(
-                "Permission denied", HTTPStatus.FORBIDDEN
-            )
-            raise Exception(self.error_message)
-        return True
+                return func(self, req, *args, **kwargs)
 
-    def check_login_status(self, token: str = Depends(get_current_user)) -> bool:
-        if not token:
-            self.error_message = self.commons.get_error(
-                "You need to log in first", HTTPStatus.UNAUTHORIZED
-            )
-            raise Exception(self.error_message)
-        return True
+            return wrapper
+
+        return decorator
+
+    def has_required_roles(user_info, allowed_roles: List[str]) -> bool:
+        user_roles = user_info.get("roles", [])
+        return any(role in user_roles for role in allowed_roles)

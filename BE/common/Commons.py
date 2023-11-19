@@ -31,6 +31,13 @@ class Commons:
         self.db.refresh(model)
         return model
 
+    def create_all(self, models):
+        self.db.add_all(models)
+        self.db.commit()
+        for model in models:
+            self.db.refresh(model)
+        return models
+
     def update(self, model, field, value, update_data: dict) -> None:
         instance = self.get_model(self, model, field, value)
         if instance:
