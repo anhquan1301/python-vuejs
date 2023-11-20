@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from sqlalchemy.orm import scoped_session
-from core.Enum import CodeName, ValueOfRole
+from core.Enum import CodeName
 from dto.product.DataEntryDTO import DataEntryDTO
 from dto.product.ProductCreateDTO import ProductCreateDTO
 from model.Image import Image
@@ -9,7 +9,6 @@ from model.ProductCapacity import ProductCapacity
 
 from repository.ProductRepository import ProductRepository
 from common.Commons import Commons
-from auth.auth import Authencation
 
 
 class ProductService:
@@ -18,7 +17,6 @@ class ProductService:
         self.product_repo = ProductRepository(db=self.db)
         self.commons = Commons(db=db)
 
-    @Authencation.authenticate_and_authorize(["ROLE_ADMIN"])
     def get_product_list(self, value_search: dict) -> dict:
         result_product_list: list = self.product_repo.get_product_list(**value_search)
         response: dict = {"message": "Retrieve data successfully"}

@@ -1,7 +1,7 @@
 from http import HTTPStatus
 import azure.functions as func
 from pydantic import ValidationError
-from auth.auth import Authencation
+from auth.auth import Authentication
 from dto.account.AccountLoginDTO import AccountDTO
 from dto.account.ChangePasswordDTO import ChangePasswordDTO
 from dto.account.RegistrationDataDTO import RegistrationDataDTO
@@ -15,10 +15,10 @@ class AuthController:
     def __init__(self, db: scoped_session) -> None:
         self.db = db
         self.auth_service = AuthService(db=self.db)
-        self.authenticate = Authencation(db=self.db)
+        self.authenticate = Authentication(db=self.db)
         self.commons = Commons(db=self.db)
 
-    def login(self, req=func.HttpRequest) -> func.HttpResponse:
+    def login(self, req: func.HttpRequest = func.HttpRequest) -> func.HttpResponse:
         try:
             data = req.get_json()
             account_by_request = AccountDTO(**data)
@@ -30,7 +30,7 @@ class AuthController:
                 error_message, HTTPStatus.BAD_REQUEST
             )
 
-    def register(self, req=func.HttpRequest) -> func.HttpResponse:
+    def register(self, req: func.HttpRequest = func.HttpRequest) -> func.HttpResponse:
         try:
             data = req.get_json()
             registration_data = RegistrationDataDTO(**data)
@@ -42,7 +42,9 @@ class AuthController:
                 error_message, HTTPStatus.BAD_REQUEST
             )
 
-    def change_password(self, req=func.HttpRequest) -> func.HttpResponse:
+    def change_password(
+        self, req: func.HttpRequest = func.HttpRequest
+    ) -> func.HttpResponse:
         try:
             data = req.get_json()
             change_password_data = ChangePasswordDTO(**data)
@@ -56,4 +58,3 @@ class AuthController:
             return self.commons.response_func_http(
                 error_message, HTTPStatus.BAD_REQUEST
             )
-    

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from auth.auth import Authencation
+from auth.auth import Authentication
 from common.Commons import Commons
 from core.Enum import AccessTokenExprie, ValueOfRole
 from dto.account.AccountLoginDTO import AccountDTO
@@ -18,7 +18,7 @@ class AuthService:
         self.db = db
         self.error_message: dict
         self.commons = Commons(db=self.db)
-        self.authencation = Authencation(db=self.db)
+        self.authencation = Authentication(db=self.db)
 
     def handle_login(self, account_by_request: AccountDTO) -> func.HttpResponse:
         account = self.authencation.authenticate_user(

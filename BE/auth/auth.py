@@ -15,7 +15,7 @@ from azure.functions import HttpRequest, HttpResponse
 from sqlalchemy.orm import scoped_session
 
 
-class Authencation:
+class Authentication:
     def __init__(self, db: scoped_session) -> None:
         self.db = db
         self.error_message: dict
@@ -67,25 +67,8 @@ class Authencation:
         user_info = self.verify_token(token)
         return user_info
 
-    
-    def authenticate_and_authorize(allowed_roles: List[str]):
-        def decorator(func):
-            def wrapper(self, req=HttpRequest, *args, **kwargs):
-                token = req.headers.get("Authorization")
-                user_info = self.get_current_user(token)
 
-                if not self.has_required_roles(user_info, allowed_roles):
-                    self.error_message = self.commons.get_error(
-                        "Permission denied", HTTPStatus.FORBIDDEN
-                    )
-                    raise Exception(self.error_message)
 
-                return func(self, req, *args, **kwargs)
-
-            return wrapper
-
-        return decorator
-
-    def has_required_roles(user_info, allowed_roles: List[str]) -> bool:
+    def has_required_roles(self, user_info, allowed_roles: List[str]) -> bool:
         user_roles = user_info.get("roles", [])
         return any(role in user_roles for role in allowed_roles)
