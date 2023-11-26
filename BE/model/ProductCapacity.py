@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from sqlalchemy import BigInteger, Column, Integer
 
 from model.BaseModel import BaseModel

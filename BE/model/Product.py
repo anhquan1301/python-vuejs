@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from sqlalchemy import Boolean, Column, Integer, String, Text
 
 from model.BaseModel import BaseModel
@@ -14,4 +13,3 @@ class Product(BaseModel):
     is_delete = Column(Boolean, default=False)
     product_type_id = Column(Integer, unique=True)
     producer_id = Column(Integer, unique=True)
-    

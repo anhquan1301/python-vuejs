@@ -6,6 +6,7 @@ import logging
 from controller.AuthController import AuthController
 from common.Commons import Commons
 from config.db import SessionLocal
+from controller.CustomerController import CustomerController
 from controller.ProductController import ProductController
 
 app = func.FunctionApp()
@@ -16,6 +17,7 @@ def route_dispatcher(req: func.HttpRequest) -> func.HttpResponse:
     if req.method == "GET":
         routes = {
             "product-list": ProductController(db=db).get_product_list,
+            "customer-detail": CustomerController(db=db).get_customer_detail,
         }
     elif req.method == "POST":
         routes = {

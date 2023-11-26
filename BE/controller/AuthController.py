@@ -1,13 +1,13 @@
 from http import HTTPStatus
 import azure.functions as func
 from pydantic import ValidationError
-from auth.auth import Authentication
+from auth.Authentication import Authentication
 from dto.account.AccountLoginDTO import AccountDTO
 from dto.account.ChangePasswordDTO import ChangePasswordDTO
 from dto.account.RegistrationDataDTO import RegistrationDataDTO
 from service.AuthService import AuthService
 from common.Commons import Commons
-
+from auth.Authorization import Authorization
 from sqlalchemy.orm import scoped_session
 
 
@@ -48,7 +48,7 @@ class AuthController:
         try:
             data = req.get_json()
             change_password_data = ChangePasswordDTO(**data)
-            user = self.authenticate.get_current_user(req=req)
+            user = Authorization.get_current_user(req=req)
             response = self.auth_service.handle_change_password(
                 change_password_data, username=user["username"]
             )

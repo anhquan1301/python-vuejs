@@ -1,7 +1,4 @@
-from sqlalchemy.orm import relationship
-from dataclasses import dataclass
 from sqlalchemy import Column, Integer, String
-from config.db import Base
 
 from model.BaseModel import BaseModel
 

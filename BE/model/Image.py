@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from sqlalchemy import Boolean, Column, Integer, Text
 
 from model.BaseModel import BaseModel

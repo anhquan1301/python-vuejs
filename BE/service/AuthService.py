@@ -1,5 +1,5 @@
 from datetime import timedelta
-from auth.auth import Authentication
+from auth.Authentication import Authentication
 from common.Commons import Commons
 from core.Enum import AccessTokenExprie, ValueOfRole
 from dto.account.AccountLoginDTO import AccountDTO

@@ -1,7 +1,7 @@
-from dataclasses import dataclass
 from sqlalchemy import Column, DateTime, func
 
 from config.db import Base
+
 
 class BaseModel(Base):
     __abstract__ = True

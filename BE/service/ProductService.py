@@ -19,7 +19,7 @@ class ProductService:
 
     def get_product_list(self, value_search: dict) -> dict:
         result_product_list: list = self.product_repo.get_product_list(**value_search)
-        response: dict = {"message": "Retrieve data successfully"}
+        response = self.commons.get_message("Retrieve data successfully")
         products: list = []
         for element in result_product_list:
             result: dict = {

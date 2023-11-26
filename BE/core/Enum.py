@@ -17,7 +17,14 @@ class SortType(Enum):
     SORT_NAME_DESC = "3"
     SORT_NAME_ASC = "4"
 
+
 class LimitOfPage(Enum):
     LIMIT = 2
+
+
 class CodeName(Enum):
     PRODUCT_CODE_NAME = "SP-"
+
+
+class ALGORITHM(Enum):
+    ALGORITHM_VALUE = "HS256"
