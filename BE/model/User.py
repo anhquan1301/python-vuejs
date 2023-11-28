@@ -11,5 +11,5 @@ class User(BaseModel):
     number_phone = Column(String(10))
     address = Column(Text)
     avatar = Column(Text)
-    date_of_birth = Date
+    date_of_birth = Column(Date)
     account_id = Column(Integer)

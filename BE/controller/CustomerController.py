@@ -1,5 +1,6 @@
 from sqlalchemy.orm import scoped_session
-
+import azure.functions as func
+from auth.Authorization import Authorization
 from service.CustomerService import CustomerService
 
 
@@ -8,5 +9,10 @@ class CustomerController:
         self.db = db
         self.customer_service = CustomerService(db=self.db)
 
-    def get_customer_detail(self):
-        pass
+    def get_customer_detail(
+        self, req: func.HttpRequest = func.HttpRequest
+    ) -> func.HttpResponse:
+        user = Authorization.get_current_user(req=req)
+        username = user["username"]
+        response = self.customer_service.handle_get_customer_detail(username)
+        return response

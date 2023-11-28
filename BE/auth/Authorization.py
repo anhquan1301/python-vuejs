@@ -8,7 +8,7 @@ from core.Enum import ALGORITHM
 
 class Authorization:
     ALGORITHM = ALGORITHM.ALGORITHM_VALUE.value
-    SECRET_KEY = os.getenv("SECRET_KEY")
+    SECRET_KEY = "QuanNLA"
 
     def verify_token(token: str):
         try:
