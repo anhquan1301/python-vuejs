@@ -2,7 +2,6 @@ from http import HTTPStatus
 from sqlalchemy.orm import scoped_session
 
 from common.Commons import Commons
-from model.Account import Account
 from repository.CustomerRepository import CustomerRepository
 
 
@@ -29,6 +28,7 @@ class CustomerService:
             "address": customer.address,
             "dateOfBirth": customer.date_of_birth,
             "point": customer.point,
+            "avatar": customer.avatar,
         }
         response["data"] = data_response
         return self.commons.response_func_http(response, HTTPStatus.OK)

@@ -1,3 +1,4 @@
+import datetime
 from http import HTTPStatus
 import json
 from passlib.context import CryptContext
@@ -62,11 +63,16 @@ class Commons:
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def response_func_http(
-        self, message: dict, status_code: HTTPStatus
+        self, data: dict, status_code: HTTPStatus
     ) -> func.HttpResponse:
+        def convert_dates(obj):
+            if isinstance(obj, (datetime.date, datetime.datetime)):
+                return obj.strftime("%d-%m-%Y")
+            return obj
+
         return func.HttpResponse(
             status_code=status_code,
-            body=json.dumps(message),
+            body=json.dumps(data, default=convert_dates),
             mimetype="application/json",
         )
 
