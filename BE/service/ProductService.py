@@ -17,7 +17,7 @@ class ProductService:
         self.product_repo = ProductRepository(db=self.db)
         self.commons = Commons(db=db)
 
-    def get_product_list(self, value_search: dict) -> dict:
+    def handle_get_product_list(self, value_search: dict) -> dict:
         result_product_list: list = self.product_repo.get_product_list(**value_search)
         response = self.commons.get_message("Retrieve data successfully")
         products: list = []
@@ -35,18 +35,15 @@ class ProductService:
         return self.commons.response_func_http(response, HTTPStatus.OK)
 
     def handle_create_product(self, data: ProductCreateDTO) -> dict:
-        count_id: int = self.product_repo.get_count_id()
+        count_id: int = self.commons.get_count_id(Product)
         code: str = CodeName.PRODUCT_CODE_NAME.value + str(count_id)
         is_data_entry: bool = False
         is_delete: bool = False
         product = Product(
+            **data.dict(),
             code=code,
-            name=data.name,
-            description=data.description,
             is_data_entry=is_data_entry,
             is_delete=is_delete,
-            product_type_id=data.product_type_id,
-            producer_id=data.producer_id,
         )
         self.commons.create(product)
         message = self.commons.get_message("create successful product")

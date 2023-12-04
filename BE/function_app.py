@@ -25,6 +25,7 @@ def route_dispatcher(req: func.HttpRequest) -> func.HttpResponse:
             "register": AuthController(db=db).register,
             "create-product": ProductController(db=db).create_product,
             "create-product-capacity": ProductController(db=db).create_product_capacity,
+            "create-customer":CustomerController(db=db).create_customer,
         }
     elif req.method == "PUT":
         routes = {"change-password": AuthController(db=db).change_password}

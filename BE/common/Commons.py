@@ -1,10 +1,12 @@
 import datetime
 from http import HTTPStatus
 import json
+from typing import Any, Type, get_type_hints
 from passlib.context import CryptContext
-import azure.functions as func
-from pydantic import ValidationError
+import azure.functions as funct
+from pydantic import BaseModel, ValidationError
 from sqlalchemy.orm import scoped_session
+from sqlalchemy import func
 
 
 class Commons:
@@ -64,13 +66,13 @@ class Commons:
 
     def response_func_http(
         self, data: dict, status_code: HTTPStatus
-    ) -> func.HttpResponse:
+    ) -> funct.HttpResponse:
         def convert_dates(obj):
             if isinstance(obj, (datetime.date, datetime.datetime)):
                 return obj.strftime("%d-%m-%Y")
             return obj
 
-        return func.HttpResponse(
+        return funct.HttpResponse(
             status_code=status_code,
             body=json.dumps(data, default=convert_dates),
             mimetype="application/json",
@@ -84,3 +86,11 @@ class Commons:
 
     def get_message(self, message: str):
         return {"message": message}
+
+    def get_count_id(self, model) -> any:
+        query = (
+            self.db.query(func.count(model.id).label("count"))
+            .select_from(model)
+            .scalar()
+        )
+        return query

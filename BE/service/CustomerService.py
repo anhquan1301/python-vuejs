@@ -2,6 +2,10 @@ from http import HTTPStatus
 from sqlalchemy.orm import scoped_session
 
 from common.Commons import Commons
+from core.Enum import CodeName
+from dto.user.CustomerCreateDTO import CustomerCreateDTO
+from model.Account import Account
+from model.Customer import Customer
 from repository.CustomerRepository import CustomerRepository
 
 
@@ -32,3 +36,15 @@ class CustomerService:
         }
         response["data"] = data_response
         return self.commons.response_func_http(response, HTTPStatus.OK)
+
+    def handle_create_customer(self, data: CustomerCreateDTO, username: str):
+        count_id = self.commons.get_count_id(Customer)
+        code: str = CodeName.CUSTOMER_CODE_NAME.value + str(count_id)
+        customer_model = Customer(**data.dict())
+        customer_model.code = code
+        customer_model.point = 0
+        account = self.commons.get_model(Account, Account.username.name, username)
+        customer_model.account_id = account.id
+        self.commons.create(customer_model)
+        message = self.commons.get_message("Successfully added new customers")
+        return self.commons.response_func_http(message, HTTPStatus.CREATED)

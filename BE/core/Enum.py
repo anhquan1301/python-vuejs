@@ -24,7 +24,7 @@ class LimitOfPage(Enum):
 
 class CodeName(Enum):
     PRODUCT_CODE_NAME = "SP-"
-
+    CUSTOMER_CODE_NAME = "KH-"
 
 class ALGORITHM(Enum):
     ALGORITHM_VALUE = "HS256"

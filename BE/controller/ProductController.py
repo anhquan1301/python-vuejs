@@ -25,7 +25,7 @@ class ProductController:
             "sort_type": req.params.get("sortType"),
         }
 
-        response = self.product_service.get_product_list(value_select)
+        response = self.product_service.handle_get_product_list(value_select)
         return response
 
     @Authorization.authenticate_and_authorize(
